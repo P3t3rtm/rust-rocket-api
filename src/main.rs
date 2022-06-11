@@ -1,13 +1,31 @@
 #[macro_use] extern crate rocket;
 
+use rocket_db_pools::{
+    Database,
+    Connection
+};
+
+use rocket_db_pools::sqlx::{
+    self,
+    Row
+};
+
+#[derive(Database)]
+#[database("db_rocket")]
+struct Data(sqlx::MySqlPool);
+
+
 #[get("/")]
 fn index() -> &'static str {
     "Hello, world! tesing 123"
 }
 
-#[get("/3/test3")]              // <- route attribute
-fn world() -> &'static str {  // <- request handler
-    "hello, world! gay"
+#[get("/<id>")]
+async fn read(mut db: Connection<Data>, id: i64) -> Option<String> {
+   sqlx::query("SELECT content FROM logs WHERE id = ?").bind(id)
+       .fetch_one(&mut *db).await
+       .and_then(|r| Ok(r.try_get(0)?))
+       .ok()
 }
 
 use rocket::tokio::time::{sleep, Duration};
@@ -21,8 +39,9 @@ async fn delay(seconds: u64) -> String {
 #[launch]
 fn rocket() -> _ {
     rocket::build()
+        .attach(Data::init())
         .mount("/", routes![index,delay])
-        .mount("/2/testing", routes![world,index])
-        .mount("/testing123", routes![world])
+        .mount("/2/testing", routes![read,index])
+        .mount("/test2", routes![read])
 }
 
