@@ -1,8 +1,6 @@
 # rust-rocket-api
  
 this is the backend for the main project here:
-
-
 # https://github.com/P3t3rtm/flutter-app
 
 # Rocket notes:
@@ -30,3 +28,8 @@ fn nameofroute2() -> &'static str {
             - OK (200): test message 1
         - example.com/test1/test2/test5/test6:
             - OK (200): test message 2
+
+
+# Toql ORM notes:
+
+- 
