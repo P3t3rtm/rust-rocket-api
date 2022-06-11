@@ -26,7 +26,7 @@ async fn read(mut db: Connection<Data>, id: i64) -> Option<String> {
        .fetch_one(&mut *db).await
        .and_then(|r| Ok(r.try_get(0)?))
        .ok()
-}
+}//something
 
 use rocket::tokio::time::{sleep, Duration};
 
