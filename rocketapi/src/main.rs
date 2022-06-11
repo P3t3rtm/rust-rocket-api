@@ -5,7 +5,7 @@ fn index() -> &'static str {
     "Hello, world! tesing 123"
 }
 
-#[get("/world")]              // <- route attribute
+#[get("/3/test3")]              // <- route attribute
 fn world() -> &'static str {  // <- request handler
     "hello, world! gay"
 }
@@ -14,6 +14,7 @@ fn world() -> &'static str {  // <- request handler
 fn rocket() -> _ {
     rocket::build()
         .mount("/", routes![index])
-        .mount("/testing", routes![world,index])
+        .mount("/2/testing", routes![world,index])
         .mount("/testing123", routes![world])
 }
+
