@@ -5,26 +5,32 @@ use rocket::fs::FileServer;
 use rocket_db_pools::sqlx::{self, Row};
 use rocket_db_pools::{Connection, Database};
 use rocket::http::Status;
-use rocket::request::{self, Outcome, Request, FromRequest};
+use rocket::request::{Outcome, Request, FromRequest};
 #[derive(Database)]
 #[database("db_rocket")]
 struct Data(sqlx::MySqlPool);
 
+
+
+
+
+
+
+
+const XAPIKEY: &str = "xapikey";
 /* #endregion */
 
 
 
-
+/* #region  functions */
 
 
 struct ApiKey<'r>(&'r str);
-
 #[derive(Debug)]
 enum ApiKeyError {
     Missing,
     Invalid,
 }
-
 #[rocket::async_trait]
 impl<'r> FromRequest<'r> for ApiKey<'r> {
     type Error = ApiKeyError;
@@ -32,37 +38,38 @@ impl<'r> FromRequest<'r> for ApiKey<'r> {
     async fn from_request(req: &'r Request<'_>) -> Outcome<Self, Self::Error> {
         /// Returns true if `key` is a valid API key string.
         fn is_valid(key: &str) -> bool {
-            key == "valid_api_key"
+            key == XAPIKEY
         }
 
-        match req.headers().get_one("x-api-key") {
-            None => Outcome::Failure((Status::Forbidden, ApiKeyError::Missing)),
-            Some(key) if is_valid(key) => Outcome::Success(ApiKey(key)),
-            Some(_) => Outcome::Failure((Status::Forbidden, ApiKeyError::Invalid)),
+        match req.headers().get_one("apikey") {
+            None => Outcome::Failure((Status::Forbidden, ApiKeyError::Missing)), //headers contains no "apikey"
+            Some(keyd) if is_valid(keyd) => Outcome::Success(ApiKey(keyd)), //headers contains "apikey" and it is valid
+            Some(_) => Outcome::Failure((Status::Forbidden, ApiKeyError::Invalid)), //headers contains "apikey" and it is invalid
         }
     }
 }
 
 
 
-
-
+/* #endregion */
 
 /* #region  routes */
 
+// #[get("/production")]
+
 #[get("/sensitive")]
-fn sensitive(key: ApiKey<'_>) -> &'static str {
+fn sensitive(_xkey:ApiKey) -> &'static str {
     "Sensitive data."
 }
 
 #[get("/")]
-fn index() -> &'static str {
+fn index(_a:ApiKey) -> &'static str {
     "Hello, world! tesing 123"
 }
 
 #[get("/<id>")]
 async fn read(mut db: Connection<Data>, id: i64) -> Option<String> {
-    sqlx::query("SELECT content FROM logs WHERE id = ?")
+    sqlx::query("SELECT firstname FROM users WHERE id = ?")
         .bind(id)
         .fetch_one(&mut *db)
         .await
